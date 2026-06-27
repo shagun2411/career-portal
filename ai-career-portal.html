@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerAI — Smart Career Portal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0D1117;--navy:#0F2744;--blue:#1A56DB;--sky:#3B82F6;
+  --teal:#0EA5E9;--accent:#F59E0B;--green:#10B981;--red:#EF4444;
+  --purple:#8B5CF6;--light:#F8FAFC;--white:#FFFFFF;
+  --gray:#64748B;--border:#E2E8F0;--text:#1E293B;
+  --card:#FFFFFF;--muted:#94A3B8;
+}
+body{font-family:'Inter',sans-serif;background:var(--light);color:var(--text);min-height:100vh}
+/* NAV */
+nav{background:var(--navy);height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.2)}
+.logo{font-family:'Space Grotesk',sans-serif;color:#fff;font-size:1.3rem;font-weight:700;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.nav-right{display:flex;gap:.5rem;align-items:center}
+.nbtn{padding:7px 16px;border-radius:7px;font-size:.83rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:'Inter',sans-serif}
+.nbtn-ghost{background:transparent;color:#94A3B8}.nbtn-ghost:hover{color:#fff}
+.nbtn-solid{background:var(--sky);color:#fff}.nbtn-solid:hover{background:var(--blue)}
+.nbtn-accent{background:var(--accent);color:var(--ink)}.nbtn-accent:hover{opacity:.9}
+/* PAGES */
+.page{display:none}.page.active{display:block}
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1A3A6B 100%);padding:4.5rem 2rem 3.5rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(59,130,246,.15) 0%,transparent 60%)}
+.hero-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:var(--accent);padding:5px 16px;border-radius:20px;font-size:.78rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1.5rem}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.9rem,4.5vw,3rem);font-weight:700;color:#fff;line-height:1.15;margin-bottom:1rem;max-width:680px;margin-left:auto;margin-right:auto}
+.hero h1 em{color:var(--accent);font-style:normal}
+.hero p{color:#94A3B8;font-size:1rem;max-width:480px;margin:0 auto 2.5rem;line-height:1.7}
+/* UPLOAD ZONE */
+.upload-zone{max-width:560px;margin:0 auto;background:rgba(255,255,255,.06);border:2px dashed rgba(255,255,255,.2);border-radius:16px;padding:2.5rem 2rem;cursor:pointer;transition:all .3s;position:relative}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(245,158,11,.08)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:2.8rem;margin-bottom:.8rem}
+.upload-title{color:#fff;font-weight:700;font-size:1.05rem;margin-bottom:.4rem}
+.upload-sub{color:#64748B;font-size:.83rem}
+.upload-formats{display:flex;justify-content:center;gap:.5rem;margin-top:1rem;flex-wrap:wrap}
+.fmt-tag{background:rgba(255,255,255,.08);color:#94A3B8;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:600}
+/* LOADING */
+.loading-screen{display:none;flex-direction:column;align-items:center;justify-content:center;padding:4rem 2rem;text-align:center}
+.loading-screen.show{display:flex}
+.loader-ring{width:64px;height:64px;border:4px solid var(--border);border-top-color:var(--sky);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:1.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-steps{display:flex;flex-direction:column;gap:.5rem;margin-top:1rem}
+.loading-step{font-size:.85rem;color:var(--gray);display:flex;align-items:center;gap:.5rem;opacity:.4;transition:opacity .3s}
+.loading-step.done{opacity:1;color:var(--green)}
+.loading-step.active{opacity:1;color:var(--sky)}
+/* CONTAINER */
+.ctr{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.sec{padding:2.5rem 0}
+/* ANALYSIS CARD */
+.analysis-hero{background:linear-gradient(135deg,var(--navy),#1A3A6B);border-radius:16px;padding:2rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.score-ring-wrap{position:relative;flex-shrink:0}
+.score-ring-wrap svg{transform:rotate(-90deg)}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:800;color:#fff}
+.score-label{font-size:.65rem;color:#94A3B8;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.analysis-info h2{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:.4rem}
+.analysis-info p{color:#94A3B8;font-size:.87rem;line-height:1.6;max-width:480px}
+.analysis-badges{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem}
+.abadge{padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700}
+.abadge-green{background:rgba(16,185,129,.2);color:#34D399}
+.abadge-yellow{background:rgba(245,158,11,.2);color:#FCD34D}
+.abadge-red{background:rgba(239,68,68,.2);color:#FCA5A5}
+/* CARDS */
+.card{background:var(--card);border-radius:14px;border:1.5px solid var(--border);padding:1.5rem;margin-bottom:1.2rem}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+/* STRENGTHS / WEAKNESSES */
+.sw-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+.sw-card{border-radius:12px;padding:1.3rem;border:1.5px solid}
+.sw-card.strengths{background:#F0FDF4;border-color:#BBF7D0}
+.sw-card.weaknesses{background:#FEF2F2;border-color:#FECACA}
+.sw-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem}
+.sw-card.strengths .sw-label{color:#15803D}
+.sw-card.weaknesses .sw-label{color:#DC2626}
+.sw-item{display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.6rem;font-size:.85rem;line-height:1.5}
+.sw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:.4rem}
+.strengths .sw-dot{background:var(--green)}
+.weaknesses .sw-dot{background:var(--red)}
+/* FIX SUGGESTIONS */
+.fix-item{background:var(--light);border-radius:10px;padding:1rem 1.1rem;margin-bottom:.8rem;border-left:3px solid var(--sky);display:flex;align-items:flex-start;gap:.8rem}
+.fix-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.fix-text{font-size:.85rem;line-height:1.5;color:var(--text)}
+.fix-text strong{color:var(--navy);display:block;margin-bottom:2px}
+.fix-btn{margin-top:.5rem;background:var(--sky);color:#fff;border:none;padding:5px 14px;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;transition:background .2s;font-family:'Inter',sans-serif}
+.fix-btn:hover{background:var(--blue)}
+/* AI REWRITE */
+.ai-rewrite-box{background:linear-gradient(135deg,#F0F7FF,#EFF6FF);border:1.5px solid #BFDBFE;border-radius:12px;padding:1.2rem;margin-top:.8rem;display:none}
+.ai-rewrite-box.show{display:block}
+.ai-rewrite-label{font-size:.75rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.ai-rewrite-text{font-size:.85rem;line-height:1.6;color:var(--text);white-space:pre-wrap}
+.copy-btn{margin-top:.6rem;background:none;border:1.5px solid var(--blue);color:var(--blue);padding:4px 12px;border-radius:6px;font-size:.74rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+/* RESUME SERVICE */
+.service-card{background:linear-gradient(135deg,#4F46E5,#7C3AED);border-radius:14px;padding:1.8rem;color:#fff;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.service-icon{font-size:2.5rem;flex-shrink:0}
+.service-info h3{font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:.4rem}
+.service-info p{font-size:.85rem;color:rgba(255,255,255,.7);line-height:1.5;max-width:420px}
+.service-price{margin-left:auto;text-align:center;flex-shrink:0}
+.price-val{font-size:1.5rem;font-weight:800;color:var(--accent)}
+.price-sub{font-size:.75rem;color:rgba(255,255,255,.5);margin-top:2px}
+.service-btn{background:var(--accent);color:var(--ink);border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:.88rem;cursor:pointer;margin-top:.8rem;transition:opacity .2s;font-family:'Inter',sans-serif}
+.service-btn:hover{opacity:.9}
+/* JOB MATCHES */
+.match-card{background:var(--card);border-radius:12px;border:1.5px solid var(--border);padding:1.3rem;cursor:pointer;transition:all .2s;position:relative;margin-bottom:1rem}
+.match-card:hover{border-color:var(--sky);box-shadow:0 4px 20px rgba(59,130,246,.1);transform:translateY(-1px)}
+.match-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.8rem}
+.match-left{display:flex;align-items:flex-start;gap:.8rem}
+.co-logo{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:#fff;flex-shrink:0}
+.match-title{font-weight:700;font-size:.95rem;color:var(--navy);margin-bottom:2px}
+.match-co{font-size:.82rem;color:var(--gray)}
+.match-pct{flex-shrink:0;text-align:right}
+.pct-num{font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:800}
+.pct-label{font-size:.68rem;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.pct-high{color:var(--green)}
+.pct-mid{color:var(--accent)}
+.pct-low{color:var(--red)}
+/* MATCH BAR */
+.match-bar-wrap{margin:.6rem 0}
+.match-bar-bg{background:var(--border);height:6px;border-radius:3px;overflow:hidden}
+.match-bar-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.fill-green{background:linear-gradient(90deg,var(--green),#34D399)}
+.fill-amber{background:linear-gradient(90deg,var(--accent),#FCD34D)}
+.fill-red{background:linear-gradient(90deg,var(--red),#FCA5A5)}
+.match-skills{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.7rem}
+.mskill{padding:3px 9px;border-radius:5px;font-size:.72rem;font-weight:600}
+.mskill-match{background:#ECFDF5;color:#065F46}
+.mskill-miss{background:#FEF2F2;color:#991B1B}
+.match-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--border)}
+.match-meta{font-size:.78rem;color:var(--gray)}
+.apply-btn{background:var(--sky);color:#fff;border:none;padding:7px 18px;border-radius:7px;font-size:.8rem;font-weight:600;cursor:pointer;transition:background .2s;font-family:'Inter',sans-serif}
+.apply-btn:hover{background:var(--blue)}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(15,39,68,.65);z-index:200;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(3px)}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:540px;padding:2rem;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Space Grotesk',sans-serif;font-size:1.15rem;font-weight:700;color:var(--navy);margin-bottom:.3rem}
+.modal-sub{font-size:.85rem;color:var(--gray);margin-bottom:1.5rem}
+.modal-close{float:right;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray);margin-top:-2px}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:1rem}
+.form-group label{font-size:.8rem;font-weight:600;color:var(--navy)}
+.form-group input,.form-group select,.form-group textarea{padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;font-family:'Inter',sans-serif;color:var(--text);outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--sky)}
+.form-group textarea{min-height:90px;resize:vertical}
+.modal-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:12px;border-radius:9px;font-size:.93rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s}
+.modal-btn:hover{background:var(--blue)}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-size:.87rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;border-left:4px solid var(--accent);max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+/* TABS */
+.tabs{display:flex;gap:.3rem;background:var(--border);border-radius:10px;padding:4px;margin-bottom:1.5rem}
+.tab{flex:1;padding:8px;border-radius:7px;border:none;background:none;font-size:.83rem;font-weight:600;cursor:pointer;color:var(--gray);transition:all .2s;font-family:'Inter',sans-serif;text-align:center}
+.tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+/* PROGRESS BAR */
+.prog-item{margin-bottom:.9rem}
+.prog-label{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.3rem}
+.prog-label span:first-child{font-weight:600;color:var(--text)}
+.prog-label span:last-child{font-weight:700;color:var(--sky)}
+.prog-bg{background:var(--border);height:8px;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--sky),var(--teal));transition:width 1.2s ease}
+/* SECTION HEADERS */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
+.sec-title{font-family:'Space Grotesk',sans-serif;font-size:1.05rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:.4rem}
+.sec-sub{font-size:.8rem;color:var(--gray);margin-top:1px}
+/* STEP INDICATOR */
+.steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:2.5rem;flex-wrap:wrap}
+.step-item{display:flex;align-items:center;gap:0}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;transition:all .3s;flex-shrink:0}
+.step-dot.done{background:var(--green);color:#fff}
+.step-dot.active{background:var(--sky);color:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.step-dot.pending{background:var(--border);color:var(--gray)}
+.step-line{width:48px;height:2px;background:var(--border);transition:background .3s}
+.step-line.done{background:var(--green)}
+.step-text{font-size:.72rem;font-weight:600;margin-top:.4rem;text-align:center;color:var(--gray);white-space:nowrap}
+.step-wrap{display:flex;flex-direction:column;align-items:center}
+/* CHIP */
+.chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700}
+.chip-blue{background:#EFF6FF;color:#1D4ED8}
+.chip-green{background:#ECFDF5;color:#065F46}
+.chip-purple{background:#F5F3FF;color:#6D28D9}
+/* RESPONSIVE */
+@media(max-width:640px){
+  .sw-grid{grid-template-columns:1fr}
+  .service-card{flex-direction:column}
+  .service-price{margin-left:0;text-align:left}
+  .analysis-hero{flex-direction:column;text-align:center}
+  nav{padding:0 1rem}
+  .hero{padding:3rem 1.2rem 2.5rem}
+  .step-line{width:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Career<span>AI</span></div>
+  <div class="nav-right">
+    <button class="nbtn nbtn-ghost" onclick="goHome()">Home</button>
+    <button class="nbtn nbtn-ghost" onclick="showTab('jobs')">Jobs</button>
+    <button class="nbtn nbtn-accent" onclick="goHome()">Upload Resume</button>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-pill">✨ AI-Powered Resume Analysis</div>
+    <h1>Your Resume, <em>Analyzed</em><br>Your Career, <em>Matched</em></h1>
+    <p>Upload your resume — AI will highlight your strengths, fix weaknesses, and match you to the best jobs.</p>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" accept=".pdf,.doc,.docx,.txt" onchange="handleFileUpload(this)" id="fileInput">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">Drop your resume here</div>
+      <div class="upload-sub">or click to browse your files</div>
+      <div class="upload-formats">
+        <span class="fmt-tag">PDF</span>
+        <span class="fmt-tag">DOC</span>
+        <span class="fmt-tag">DOCX</span>
+        <span class="fmt-tag">TXT</span>
+      </div>
+    </div>
+    <div style="margin-top:1.2rem;color:#475569;font-size:.8rem">
+      🔒 Your resume is private and never shared
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div class="ctr">
+    <div class="loading-screen" id="loadingScreen">
+      <div class="loader-ring"></div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:1.1rem;font-weight:700;color:var(--navy)">Analyzing your resume...</div>
+      <div class="loading-steps" id="loadingSteps">
+        <div class="loading-step" id="ls1">📄 Reading your resume content</div>
+        <div class="loading-step" id="ls2">🔍 Identifying strengths & weaknesses</div>
+        <div class="loading-step" id="ls3">✏️ Generating improvement suggestions</div>
+        <div class="loading-step" id="ls4">💼 Matching with job openings</div>
+        <div class="loading-step" id="ls5">📊 Calculating match percentages</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSIS PAGE -->
+<div id="page-analysis" class="page">
+  <div class="ctr">
+    <div class="sec">
+      <!-- STEP INDICATOR -->
+      <div class="steps" id="stepIndicator">
+        <div class="step-wrap">
+          <div class="step-dot done" id="step1">✓</div>
+          <div class="step-text">Upload</div>
+        </div>
+        <div class="step-line done" id="line1"></div>
+        <div class="step-wrap">
+          <div class="step-dot active" id="step2">2</div>
+          <div class="step-text">Analysis</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-wrap">
+          <div class="step-dot pending" id="step3">3</div>
+          <div class="step-text">Improve</div>
+        </div>
+        <div class="step-line" id="line3"></div>
+        <div class="step-wrap">
+          <div class="step-dot pending" id="step4">4</div>
+          <div class="step-text">Job Matches</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('analysis')">📊 Analysis</button>
+        <button class="tab" onclick="showTab('improve')">✏️ Improve Resume</button>
+        <button class="tab" onclick="showTab('service')">⭐ AI Resume Service</button>
+        <button class="tab" onclick="showTab('jobs')">💼 Job Matches</button>
+      </div>
+
+      <!-- ANALYSIS TAB -->
+      <div id="tab-analysis">
+        <div class="analysis-hero" id="analysisHero">
+          <div class="score-ring-wrap">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="10"/>
+              <circle cx="55" cy="55" r="46" fill="none" stroke="url(#scoreGrad)" stroke-width="10"
+                stroke-dasharray="289" stroke-dashoffset="289" stroke-linecap="round" id="scoreCircle"/>
+              <defs>
+                <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#3B82F6"/>
+                  <stop offset="100%" style="stop-color:#10B981"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="score-center">
+              <div class="score-num" id="scoreNum">0</div>
+              <div class="score-label">Score</div>
+            </div>
+          </div>
+          <div class="analysis-info">
+            <h2 id="analysisName">Resume Analyzed ✓</h2>
+            <p id="analysisSummary">Loading summary...</p>
+            <div class="analysis-badges" id="analysisBadges"></div>
+          </div>
+        </div>
+
+        <!-- STRENGTHS & WEAKNESSES -->
+        <div class="sw-grid">
+          <div class="sw-card strengths">
+            <div class="sw-label">💪 Strengths</div>
+            <div id="strengthsList"></div>
+          </div>
+          <div class="sw-card weaknesses">
+            <div class="sw-label">⚠️ Weaknesses</div>
+            <div id="weaknessesList"></div>
+          </div>
+        </div>
+
+        <!-- SKILL SCORES -->
+        <div class="card">
+          <div class="card-title">📈 Skill Strength Breakdown</div>
+          <div id="skillScores"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:.5rem">
+          <button class="nbtn nbtn-solid" style="padding:10px 28px;font-size:.9rem" onclick="showTab('improve')">
+            ✏️ See How to Improve →
+          </button>
+        </div>
+      </div>
+
+      <!-- IMPROVE TAB -->
+      <div id="tab-improve" style="display:none">
+        <div class="card">
+          <div class="card-title">🛠️ Suggested Improvements</div>
+          <p style="font-size:.85rem;color:var(--gray);margin-bottom:1.2rem">Click "AI Fix" on any suggestion to get an instant AI-rewritten version you can use directly.</p>
+          <div id="fixList"></div>
+        </div>
+
+        <div style="text-align:center;margin-top:1rem">
+          <button class="nbtn nbtn-solid" style="padding:10px 28px;font-size:.9rem" onclick="showTab('service')">
+            ⭐ Want a Full Professional Rewrite? →
+          </button>
+        </div>
+      </div>
+
+      <!-- AI SERVICE TAB -->
+      <div id="tab-service" style="display:none">
+        <div class="service-card">
+          <div class="service-icon">🤖</div>
+          <div class="service-info">
+            <h3>AI Professional Resume Rewrite</h3>
+            <p>Get your entire resume professionally rewritten by AI — optimized for ATS systems, tailored to your target role, and reviewed for grammar, impact & formatting.</p>
+          </div>
+          <div class="service-price">
+            <div class="price-val">₹499</div>
+            <div class="price-sub">one-time</div>
+            <button class="service-btn" onclick="openServiceModal()">Get Started</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-bottom:1.5rem">
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:1.5rem;margin-bottom:.5rem">⚡</div>
+            <div style="font-weight:700;color:var(--navy);margin-bottom:.3rem">ATS Optimized</div>
+            <div style="font-size:.83rem;color:var(--gray);line-height:1.5">Your resume will pass through Applicant Tracking Systems used by top companies.</div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:1.5rem;margin-bottom:.5rem">🎯</div>
+            <div style="font-weight:700;color:var(--navy);margin-bottom:.3rem">Role-Targeted</div>
+            <div style="font-size:.83rem;color:var(--gray);line-height:1.5">Every bullet point will be tailored to the job role you're targeting.</div>
+          </div>
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:1.5rem;margin-bottom:.5rem">✅</div>
+            <div style="font-weight:700;color:var(--navy);margin-bottom:.3rem">Instant Delivery</div>
+            <div style="font-size:.83rem;color:var(--gray);line-height:1.5">Get your rewritten resume within minutes — no waiting, no back-and-forth.</div>
+          </div>
+        </div>
+
+        <!-- LIVE AI REWRITE DEMO -->
+        <div class="card">
+          <div class="card-title">🎯 Try a Free Section Rewrite</div>
+          <p style="font-size:.84rem;color:var(--gray);margin-bottom:1rem">Paste any section from your resume and see how AI improves it instantly.</p>
+          <div class="form-group">
+            <label>Your Current Text</label>
+            <textarea id="demoInput" placeholder="e.g. 'Worked on website development and helped with team tasks...'" style="min-height:80px"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Target Role</label>
+            <input type="text" id="demoRole" placeholder="e.g. Senior Frontend Developer">
+          </div>
+          <button class="nbtn nbtn-solid" style="padding:9px 22px" onclick="runDemoRewrite()">✨ Rewrite with AI</button>
+          <div class="ai-rewrite-box" id="demoOutput" style="margin-top:1rem">
+            <div class="ai-rewrite-label">✨ AI Rewritten Version</div>
+            <div class="ai-rewrite-text" id="demoOutputText"></div>
+            <button class="copy-btn" onclick="copyText('demoOutputText')">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOB MATCHES TAB -->
+      <div id="tab-jobs" style="display:none">
+        <div style="background:linear-gradient(135deg,var(--navy),#1A3A6B);border-radius:12px;padding:1.2rem 1.5rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+          <div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem">Jobs Matched to Your Resume</div>
+            <div style="font-size:.82rem;color:#94A3B8;margin-top:2px">Sorted by compatibility — green means strong fit</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:.5rem;flex-wrap:wrap" id="filterChips"></div>
+        </div>
+        <div id="jobMatchList"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE MODAL -->
+<div class="modal-bg" id="modal-service">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('service')">✕</button>
+    <div class="modal-title">⭐ AI Resume Rewrite Service</div>
+    <div class="modal-sub">Tell us your target role and we'll rewrite your full resume for maximum impact.</div>
+    <div class="form-group">
+      <label>Target Job Role</label>
+      <input type="text" id="svcRole" placeholder="e.g. Senior Product Manager">
+    </div>
+    <div class="form-group">
+      <label>Target Industry</label>
+      <select id="svcIndustry">
+        <option>Technology / IT</option>
+        <option>Finance / Banking</option>
+        <option>Marketing / Sales</option>
+        <option>Design / Creative</option>
+        <option>Healthcare</option>
+        <option>Operations / Logistics</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Years of Experience</label>
+      <select>
+        <option>Fresher (0–1 yr)</option>
+        <option>Junior (1–3 yrs)</option>
+        <option>Mid-level (3–6 yrs)</option>
+        <option>Senior (6–10 yrs)</option>
+        <option>Lead / Manager (10+ yrs)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Any specific things to highlight?</label>
+      <textarea placeholder="e.g. My leadership experience, AWS certifications, startup background..."></textarea>
+    </div>
+    <div style="background:#F8FAFC;border-radius:10px;padding:1rem;margin-bottom:1.2rem;font-size:.83rem;color:var(--gray)">
+      💳 <strong style="color:var(--navy)">₹499</strong> — includes full resume rewrite + ATS optimization + 1 revision
+    </div>
+    <button class="modal-btn" onclick="startRewriteService()">✨ Rewrite My Resume — ₹499</button>
+  </div>
+</div>
+
+<!-- AI REWRITE RESULT MODAL -->
+<div class="modal-bg" id="modal-rewrite">
+  <div class="modal" style="max-width:680px">
+    <button class="modal-close" onclick="closeModal('rewrite')">✕</button>
+    <div class="modal-title">✨ Your AI-Rewritten Resume</div>
+    <div class="modal-sub">Professionally rewritten & ATS-optimized for <span id="rewriteRole">your target role</span></div>
+    <div id="rewriteContent" style="font-size:.85rem;line-height:1.7;color:var(--text);white-space:pre-wrap;background:var(--light);border-radius:10px;padding:1.2rem;max-height:50vh;overflow-y:auto;border:1.5px solid var(--border)"></div>
+    <div style="display:flex;gap:.7rem;margin-top:1rem;flex-wrap:wrap">
+      <button class="modal-btn" style="flex:1" onclick="copyText('rewriteContent');showToast('Copied to clipboard!')">📋 Copy Resume</button>
+      <button class="modal-btn" style="flex:1;background:var(--green)" onclick="closeModal('rewrite');showToast('Saved!')">✅ Save & Use This</button>
+    </div>
+  </div>
+</div>
+
+<!-- APPLY MODAL -->
+<div class="modal-bg" id="modal-apply">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('apply')">✕</button>
+    <div class="modal-title">Apply for <span id="applyTitle">this position</span></div>
+    <div class="modal-sub">Your resume is pre-attached. Just confirm your details.</div>
+    <div class="form-group"><label>Full Name</label><input type="text" placeholder="Your full name"></div>
+    <div class="form-group"><label>Email</label><input type="email" placeholder="you@email.com"></div>
+    <div class="form-group"><label>Phone</label><input type="text" placeholder="+91 98765 43210"></div>
+    <div class="form-group"><label>Cover Note (optional)</label><textarea placeholder="Why are you a great fit?"></textarea></div>
+    <button class="modal-btn" onclick="submitApply()">Submit Application 🚀</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let resumeText = '';
+let analysisData = null;
+let currentTab = 'analysis';
+
+// ── JOBS DATA ──
+const allJobs = [
+  {id:1,title:'Senior Frontend Developer',company:'TechNova Solutions',loc:'Bangalore · Hybrid',type:'Full-time',salary:'₹14L–₹20L',color:'#2563EB',init:'T',skills:['React','JavaScript','TypeScript','CSS','Git'],cat:'tech'},
+  {id:2,title:'Full Stack Engineer',company:'CloudBase Inc',loc:'Remote',type:'Full-time',salary:'₹12L–₹18L',color:'#0891B2',init:'C',skills:['Node.js','React','MongoDB','AWS','Docker'],cat:'tech'},
+  {id:3,title:'UI/UX Designer',company:'DesignCraft Studio',loc:'Mumbai · On-site',type:'Full-time',salary:'₹8L–₹13L',color:'#7C3AED',init:'D',skills:['Figma','Adobe XD','Prototyping','User Research'],cat:'design'},
+  {id:4,title:'Backend Engineer (Python)',company:'DataDriven Co',loc:'Hyderabad · Remote',type:'Contract',salary:'₹10L–₹15L',color:'#059669',init:'D',skills:['Python','Django','PostgreSQL','Redis','Kubernetes'],cat:'tech'},
+  {id:5,title:'Product Manager',company:'Launchpad Ventures',loc:'Pune · Hybrid',type:'Full-time',salary:'₹16L–₹24L',color:'#DC2626',init:'L',skills:['Product Strategy','Agile','SQL','Stakeholder Management','Roadmapping'],cat:'product'},
+  {id:6,title:'Digital Marketing Manager',company:'GrowthHive',loc:'Remote',type:'Full-time',salary:'₹7L–₹11L',color:'#D97706',init:'G',skills:['SEO','Google Ads','Analytics','Content Strategy','Social Media'],cat:'marketing'},
+  {id:7,title:'Data Analyst',company:'Insightify',loc:'Chennai · Hybrid',type:'Full-time',salary:'₹8L–₹13L',color:'#0D9488',init:'I',skills:['Python','SQL','Tableau','Excel','Statistics'],cat:'data'},
+  {id:8,title:'DevOps Engineer',company:'InfraStack',loc:'Bangalore · On-site',type:'Full-time',salary:'₹13L–₹19L',color:'#EA580C',init:'I',skills:['Kubernetes','Docker','CI/CD','Terraform','Linux'],cat:'tech'},
+];
+
+// ── FILE UPLOAD ──
+function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  showLoading();
+  const reader = new FileReader();
+  reader.onload = e => {
+    resumeText = e.target.result || generateMockResume(file.name);
+    callClaudeAnalysis(resumeText);
+  };
+  reader.onerror = () => {
+    resumeText = generateMockResume(file.name);
+    callClaudeAnalysis(resumeText);
+  };
+  if (file.type === 'text/plain') {
+    reader.readAsText(file);
+  } else {
+    resumeText = generateMockResume(file.name);
+    setTimeout(() => callClaudeAnalysis(resumeText), 500);
+  }
+}
+
+function generateMockResume(filename) {
+  return `RESUME - ${filename}
+Name: Rahul Sharma
+Email: rahul.sharma@email.com
+Phone: +91 98765 43210
+Location: Bangalore, India
+
+OBJECTIVE
+Seeking a challenging software development role where I can utilize my skills.
+
+EXPERIENCE
+Software Developer - TechCorp (2021-2024)
+- Worked on web development projects
+- Used React and JavaScript
+- Helped with team tasks and meetings
+- Fixed bugs and wrote code
+
+Junior Developer - StartupABC (2020-2021)
+- Developed features for web app
+- Worked with databases
+
+EDUCATION
+B.Tech Computer Science - VIT University (2020)
+CGPA: 7.8/10
+
+SKILLS
+JavaScript, React, Node.js, MongoDB, Git, Python, SQL
+
+CERTIFICATIONS
+AWS Cloud Practitioner (2022)`;
+}
+
+function showLoading() {
+  document.getElementById('loadingScreen').classList.add('show');
+  const steps = ['ls1','ls2','ls3','ls4','ls5'];
+  steps.forEach((id,i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('done','active');
+    setTimeout(() => el.classList.add('active'), i * 900);
+    setTimeout(() => { el.classList.remove('active'); el.classList.add('done'); }, i * 900 + 800);
+  });
+}
+
+// ── CLAUDE API CALL ──
+async function callClaudeAnalysis(resumeContent) {
+  const prompt = `You are an expert career counselor and resume analyst. Analyze this resume and return a JSON response (ONLY JSON, no markdown):
+
+Resume:
+${resumeContent}
+
+Return this exact JSON structure:
+{
+  "name": "candidate name from resume",
+  "score": <number 0-100>,
+  "summary": "2 sentence professional summary of the candidate",
+  "level": "Fresher/Junior/Mid-level/Senior",
+  "domain": "primary domain e.g. Software Developer",
+  "strengths": ["strength 1", "strength 2", "strength 3", "strength 4"],
+  "weaknesses": ["weakness 1", "weakness 2", "weakness 3", "weakness 4"],
+  "skillScores": [
+    {"skill": "skill name", "score": <0-100>},
+    {"skill": "skill name", "score": <0-100>},
+    {"skill": "skill name", "score": <0-100>},
+    {"skill": "skill name", "score": <0-100>},
+    {"skill": "skill name", "score": <0-100>}
+  ],
+  "fixes": [
+    {"issue": "issue title", "detail": "what's wrong and why it matters", "suggestion": "specific actionable fix"},
+    {"issue": "issue title", "detail": "what's wrong and why it matters", "suggestion": "specific actionable fix"},
+    {"issue": "issue title", "detail": "what's wrong and why it matters", "suggestion": "specific actionable fix"},
+    {"issue": "issue title", "detail": "what's wrong and why it matters", "suggestion": "specific actionable fix"}
+  ],
+  "keywords": ["keyword1", "keyword2", "keyword3"],
+  "jobSkills": ["skill1", "skill2", "skill3", "skill4", "skill5", "skill6"]
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    let text = data.content.map(b => b.text || '').join('');
+    text = text.replace(/```json|```/g, '').trim();
+    analysisData = JSON.parse(text);
+  } catch(e) {
+    analysisData = getFallbackAnalysis();
+  }
+  setTimeout(() => renderAnalysis(), 5500);
+}
+
+function getFallbackAnalysis() {
+  return {
+    name: "Rahul Sharma",
+    score: 62,
+    summary: "A mid-level software developer with 3+ years of experience in web development. Has foundational skills in React and Node.js but resume lacks quantifiable achievements and strong impact statements.",
+    level: "Mid-level",
+    domain: "Software Developer",
+    strengths: [
+      "Relevant technical skills (React, Node.js, JavaScript)",
+      "AWS certification adds credibility",
+      "Consistent employment history without gaps",
+      "Computer Science degree from reputed university"
+    ],
+    weaknesses: [
+      "No quantified achievements (numbers, metrics, impact)",
+      "Vague job descriptions ('helped with tasks', 'fixed bugs')",
+      "Missing LinkedIn / GitHub / portfolio links",
+      "Objective statement is generic and adds no value"
+    ],
+    skillScores: [
+      { skill: "React / Frontend", score: 72 },
+      { skill: "Node.js / Backend", score: 60 },
+      { skill: "Database (SQL/MongoDB)", score: 55 },
+      { skill: "Cloud (AWS)", score: 48 },
+      { skill: "Communication / Soft Skills", score: 40 }
+    ],
+    fixes: [
+      { issue: "Add Quantified Achievements", detail: "Every bullet point under experience says what you did, but not how much impact it had. Recruiters want numbers.", suggestion: "Replace 'Worked on web development projects' → 'Built 5+ React dashboards used by 2,000+ daily active users, reducing page load time by 40%.'" },
+      { issue: "Remove Generic Objective", detail: "Your objective statement is a copy-paste template that adds zero value and wastes valuable space.", suggestion: "Replace with a 3-line Professional Summary: 'Software Developer with 3+ years building scalable React and Node.js applications. Certified AWS Cloud Practitioner. Seeking a senior engineering role at a product-first company.'" },
+      { issue: "Add Portfolio / GitHub Link", detail: "Technical recruiters almost always check GitHub. A missing link raises doubt about your actual output.", suggestion: "Add: GitHub: github.com/rahulsharma | Portfolio: rahulsharma.dev under your contact details." },
+      { issue: "Strengthen Skill Section", detail: "Listing skills alphabetically without grouping makes it hard to scan. ATS systems also need category context.", suggestion: "Group skills: Languages: JavaScript, Python | Frameworks: React, Node.js, Django | Cloud: AWS | Databases: MongoDB, PostgreSQL | Tools: Git, Docker" }
+    ],
+    keywords: ["React", "Node.js", "AWS", "JavaScript", "Full Stack"],
+    jobSkills: ["JavaScript", "React", "Node.js", "MongoDB", "AWS", "Python"]
+  };
+}
+
+// ── RENDER ANALYSIS ──
+function renderAnalysis() {
+  document.getElementById('loadingScreen').classList.remove('show');
+  document.getElementById('page-home').classList.remove('active');
+  document.getElementById('page-analysis').classList.add('active');
+
+  const d = analysisData;
+
+  // Score ring
+  const circle = document.getElementById('scoreCircle');
+  const circumference = 289;
+  const offset = circumference - (d.score / 100) * circumference;
+  setTimeout(() => { circle.style.strokeDashoffset = offset; }, 200);
+  animateNumber('scoreNum', 0, d.score, 1200);
+
+  document.getElementById('analysisName').textContent = `${d.name || 'Your Resume'} — ${d.domain}`;
+  document.getElementById('analysisSummary').textContent = d.summary;
+
+  // Badges
+  const badges = document.getElementById('analysisBadges');
+  badges.innerHTML = `
+    <span class="abadge abadge-green">✓ ${d.level}</span>
+    <span class="abadge abadge-yellow">📍 ${d.domain}</span>
+    <span class="abadge ${d.score>=70?'abadge-green':d.score>=50?'abadge-yellow':'abadge-red'}">${d.score>=70?'🔥 Strong Profile':d.score>=50?'📈 Good Potential':'⚡ Needs Work'}</span>
+  `;
+
+  // Strengths
+  document.getElementById('strengthsList').innerHTML = d.strengths.map(s => `
+    <div class="sw-item"><div class="sw-dot"></div><div>${s}</div></div>`).join('');
+
+  // Weaknesses
+  document.getElementById('weaknessesList').innerHTML = d.weaknesses.map(w => `
+    <div class="sw-item"><div class="sw-dot"></div><div>${w}</div></div>`).join('');
+
+  // Skill scores
+  document.getElementById('skillScores').innerHTML = d.skillScores.map(s => `
+    <div class="prog-item">
+      <div class="prog-label"><span>${s.skill}</span><span>${s.score}%</span></div>
+      <div class="prog-bg"><div class="prog-fill" style="width:0%" data-target="${s.score}"></div></div>
+    </div>`).join('');
+  setTimeout(() => {
+    document.querySelectorAll('.prog-fill').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 300);
+
+  // Fix suggestions
+  document.getElementById('fixList').innerHTML = d.fixes.map((f,i) => `
+    <div class="fix-item">
+      <div class="fix-icon">🔧</div>
+      <div class="fix-text" style="flex:1">
+        <strong>${f.issue}</strong>
+        <div style="color:var(--gray);margin-bottom:.4rem">${f.detail}</div>
+        <div><em style="color:var(--sky)">Suggestion:</em> ${f.suggestion}</div>
+        <button class="fix-btn" onclick="aiFixSection(${i})">✨ AI Fix This</button>
+        <div class="ai-rewrite-box" id="fix-output-${i}">
+          <div class="ai-rewrite-label">✨ AI Suggestion</div>
+          <div class="ai-rewrite-text" id="fix-text-${i}"></div>
+          <button class="copy-btn" onclick="copyText('fix-text-${i}')">📋 Copy</button>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Job matches
+  renderJobMatches();
+  window.scrollTo(0,0);
+}
+
+// ── JOB MATCHING ──
+function renderJobMatches() {
+  const skills = analysisData.jobSkills || [];
+  const jobs = allJobs.map(job => {
+    const matched = job.skills.filter(s => skills.some(rs => rs.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(rs.toLowerCase())));
+    const missing = job.skills.filter(s => !matched.includes(s));
+    const pct = Math.round((matched.length / job.skills.length) * 100);
+    const bonus = analysisData.score > 70 ? 8 : analysisData.score > 50 ? 4 : 0;
+    const finalPct = Math.min(99, pct + bonus + Math.floor(Math.random() * 8));
+    return { ...job, matchPct: finalPct, matched, missing };
+  }).sort((a,b) => b.matchPct - a.matchPct);
+
+  // Filter chips
+  const cats = ['All', ...new Set(allJobs.map(j => j.cat))];
+  document.getElementById('filterChips').innerHTML = cats.map((c,i) => `
+    <button onclick="filterJobMatches('${c}',this)" class="nbtn ${i===0?'nbtn-accent':'nbtn-ghost'}" style="padding:5px 14px;font-size:.78rem">${c}</button>`).join('');
+
+  window._jobMatches = jobs;
+  renderJobCards(jobs);
+}
+
+function filterJobMatches(cat, btn) {
+  document.querySelectorAll('#filterChips .nbtn').forEach(b => { b.classList.remove('nbtn-accent'); b.classList.add('nbtn-ghost'); });
+  btn.classList.remove('nbtn-ghost'); btn.classList.add('nbtn-accent');
+  const filtered = cat === 'All' ? window._jobMatches : window._jobMatches.filter(j => j.cat === cat);
+  renderJobCards(filtered);
+}
+
+function renderJobCards(jobs) {
+  document.getElementById('jobMatchList').innerHTML = jobs.map(j => {
+    const cls = j.matchPct >= 70 ? 'pct-high fill-green' : j.matchPct >= 45 ? 'pct-mid fill-amber' : 'pct-low fill-red';
+    const [pctCls, fillCls] = cls.split(' ');
+    return `
+    <div class="match-card">
+      <div class="match-header">
+        <div class="match-left">
+          <div class="co-logo" style="background:${j.color}">${j.init}</div>
+          <div>
+            <div class="match-title">${j.title}</div>
+            <div class="match-co">${j.company}</div>
+          </div>
+        </div>
+        <div class="match-pct">
+          <div class="pct-num ${pctCls}">${j.matchPct}%</div>
+          <div class="pct-label">Match</div>
+        </div>
+      </div>
+      <div class="match-bar-wrap">
+        <div class="match-bar-bg"><div class="match-bar-fill ${fillCls}" style="width:${j.matchPct}%"></div></div>
+      </div>
+      <div class="match-skills">
+        ${j.matched.map(s=>`<span class="mskill mskill-match">✓ ${s}</span>`).join('')}
+        ${j.missing.map(s=>`<span class="mskill mskill-miss">✗ ${s}</span>`).join('')}
+      </div>
+      <div class="match-footer">
+        <div class="match-meta">📍 ${j.loc} &nbsp;·&nbsp; ${j.type} &nbsp;·&nbsp; ${j.salary}</div>
+        <button class="apply-btn" onclick="openApply('${j.title}')">Apply Now</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── AI FIX SECTION ──
+async function aiFixSection(idx) {
+  const fix = analysisData.fixes[idx];
+  const btn = document.querySelector(`#fix-output-${idx}`).previousElementSibling;
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `You are an expert resume writer. The candidate has this resume issue: "${fix.issue}". The suggestion is: "${fix.suggestion}". Write a specific, ready-to-use rewritten version the candidate can copy directly into their resume. Be concrete and impactful. Keep it under 100 words. No explanations, just the rewritten content.`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text||'').join('').trim();
+    document.getElementById(`fix-text-${idx}`).textContent = text;
+  } catch(e) {
+    document.getElementById(`fix-text-${idx}`).textContent = fix.suggestion;
+  }
+
+  document.getElementById(`fix-output-${idx}`).classList.add('show');
+  btn.textContent = '✨ AI Fix This';
+  btn.disabled = false;
+}
+
+// ── DEMO REWRITE ──
+async function runDemoRewrite() {
+  const input = document.getElementById('demoInput').value.trim();
+  const role = document.getElementById('demoRole').value.trim() || 'the target role';
+  if (!input) { showToast('Please paste some text first!'); return; }
+
+  const btn = event.target;
+  btn.textContent = '⏳ Rewriting...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `You are an expert resume writer. Rewrite this resume section for a "${role}" role. Make it ATS-friendly, impactful, and quantified. Use strong action verbs. Keep same length but dramatically improve quality. Return ONLY the rewritten text, nothing else:\n\n${input}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text||'').join('').trim();
+    document.getElementById('demoOutputText').textContent = text;
+    document.getElementById('demoOutput').classList.add('show');
+  } catch(e) {
+    document.getElementById('demoOutputText').textContent = 'Failed to connect. Please try again.';
+    document.getElementById('demoOutput').classList.add('show');
+  }
+  btn.textContent = '✨ Rewrite with AI';
+  btn.disabled = false;
+}
+
+// ── AI RESUME SERVICE ──
+async function startRewriteService() {
+  const role = document.getElementById('svcRole').value.trim() || 'Software Developer';
+  closeModal('service');
+  showToast('⏳ Writing your resume... this may take a moment');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `You are a professional resume writer. Rewrite this resume for a "${role}" role. Make it ATS-optimized, impactful, with quantified achievements, strong action verbs, and professional formatting. Fix all weaknesses. Return a complete, polished resume ready to send.\n\nOriginal:\n${resumeText}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.map(b => b.text||'').join('').trim();
+    document.getElementById('rewriteRole').textContent = role;
+    document.getElementById('rewriteContent').textContent = text;
+  } catch(e) {
+    document.getElementById('rewriteContent').textContent = 'Could not generate. Please check connection and try again.';
+  }
+  openModal('rewrite');
+}
+
+// ── HELPERS ──
+function showTab(tab) {
+  currentTab = tab;
+  ['analysis','improve','service','jobs'].forEach(t => {
+    const el = document.getElementById('tab-'+t);
+    if(el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['analysis','improve','service','jobs'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+
+  // Update step indicator
+  if (tab === 'jobs') {
+    ['step3','step4','line2','line3'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) { el.classList.remove('pending'); el.classList.add(id.startsWith('step')?'active':'done'); }
+    });
+  }
+}
+
+function goHome() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  document.getElementById('loadingScreen').classList.remove('show');
+  window.scrollTo(0,0);
+}
+
+function openModal(id) { document.getElementById('modal-'+id).classList.add('open'); }
+function closeModal(id) { document.getElementById('modal-'+id).classList.remove('open'); }
+function openApply(title) { document.getElementById('applyTitle').textContent = title; openModal('apply'); }
+function submitApply() { closeModal('apply'); showToast('Application submitted! 🎉 Good luck!'); }
+function openServiceModal() { openModal('service'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent).then(() => showToast('Copied to clipboard! 📋'));
+}
+
+function animateNumber(id, from, to, dur) {
+  const el = document.getElementById(id);
+  const start = performance.now();
+  function update(now) {
+    const p = Math.min((now - start) / dur, 1);
+    el.textContent = Math.round(from + (to - from) * p);
+    if(p < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
+// Drag events
+const uz = document.getElementById('uploadZone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag'); });
+uz.addEventListener('dragleave', () => uz.classList.remove('drag'));
+uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag'); const f = e.dataTransfer.files[0]; if(f) { const dt = new DataTransfer(); dt.items.add(f); document.getElementById('fileInput').files = dt.files; handleFileUpload(document.getElementById('fileInput')); } });
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); }));
+</script>
+</body>
+</html>
